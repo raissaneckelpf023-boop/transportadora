@@ -159,29 +159,26 @@ app.delete("/clientes/:id", async(req,res)=>{
 
 
 
-app.get("/entregas", async(req,res)=>{
+app.get("/entregas", async (req, res) => {
 
-    const resultado =
-        await db.query(
+    try {
 
+        const resultado = await db.query(
             `SELECT e.*, c.nome
-
              FROM entregas e
-
-             INNER JOIN clientes c
-
-             ON e.cliente_id = c.id`
-
+             LEFT JOIN clientes c
+             ON e.cliente_id = c.id
+             ORDER BY e.id`
         );
 
+        res.json(resultado.rows);
 
-
-    res.json(
-        resultado.rows
-    );
+    } catch (erro) {
+        console.log(erro);
+        res.status(500).json({ erro: "erro em entregas" });
+    }
 
 });
-
 
 
 
@@ -514,61 +511,36 @@ app.delete("/custos/:id", async(req,res)=>{
 
 
 
-app.get("/lucro/:id", async(req,res)=>{
+app.get("/lucro/:id", async (req, res) => {
 
-    const {id} = req.params;
+    try {
 
+        const { id } = req.params;
 
-
-    const entrega =
-        await db.query(
-
-            `SELECT valor_cobrado
-
-             FROM entregas
-
-             WHERE id=$1`,
-
+        const entrega = await db.query(
+            `SELECT valor_cobrado FROM entregas WHERE id=$1`,
             [id]
-
         );
 
-
-
-    const custos =
-        await db.query(
-
-            `SELECT SUM(valor)
-
-             FROM custos
-
-             WHERE entrega_id=$1`,
-
+        const custos = await db.query(
+            `SELECT COALESCE(SUM(valor), 0) AS total FROM custos WHERE entrega_id=$1`,
             [id]
-
         );
 
+        const valorCobrado = Number(entrega.rows[0]?.valor_cobrado || 0);
+        const custoTotal = Number(custos.rows[0]?.total || 0);
 
+        const lucro = valorCobrado - custoTotal;
 
-    const custo =
-        custos.rows[0].sum || 0;
+        res.json({
+            custo: custoTotal,
+            lucro: lucro
+        });
 
-
-
-    const lucro =
-        entrega.rows[0].valor_cobrado
-        -
-        custo;
-
-
-
-    res.json({
-
-        custo,
-
-        lucro
-
-    });
+    } catch (erro) {
+        console.log(erro);
+        res.status(500).json({ erro: "erro ao calcular lucro" });
+    }
 
 });
 
