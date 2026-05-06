@@ -10,7 +10,7 @@ const pool = new Pool({
 
     user: "postgres",
 
-    password: "Setembro2003@",
+    password: "Hp4Rf4krHhNCUJYE",
 
     ssl: {
         rejectUnauthorized: false
