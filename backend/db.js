@@ -2,7 +2,7 @@ const { Pool } = require("pg");
 
 const pool = new Pool({
 
-    host: "db.tuklojsilqnpiwnuepph.supabase.co",
+    host: "db.tuklojsilqnpiwnuepph.supabase.com",
 
     port: 5432,
 
